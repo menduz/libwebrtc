@@ -221,143 +221,9 @@ endif()
 set(libc++_include_dir "${libwebrtc_source_dir}/src/buildtools/third_party/libc++/trunk/include")
 set(libc++abi_include_dir "${libwebrtc_source_dir}/src/buildtools/third_party/libc++abi/trunk/include")
 
-# NOTE(mroberts): I would like this to be INTERFACE.
-#
-#   https://gitlab.kitware.com/cmake/cmake/issues/15052
-#
-# target_include_directories(libwebrtc SYSTEM INTERFACE
-#   ${libwebrtc_source_dir}
-#   ${libwebrtc_source_dir}/webrtc
-#   ${libwebrtc_source_dir}/webrtc/third_party/abseil-cpp
-#   ${libwebrtc_source_dir}/webrtc/third_party/libyuv/include
-# )
-
-# catch2
-# -----------------------------------------------------------------------------
-
-#ExternalProject_Add(
-#  project_catch2
-#
-#  GIT_REPOSITORY    https://github.com/catchorg/Catch2.git
-#  GIT_TAG           a1cdff4f188170c5b0aa3d5d217b60d821f237df
-#
-#  PREFIX            ${CMAKE_BINARY_DIR}/external/catch2/prefix
-#  TMP_DIR           ${CMAKE_BINARY_DIR}/external/catch2/tmp
-#  STAMP_DIR         ${CMAKE_BINARY_DIR}/external/catch2/stamp
-#  DOWNLOAD_DIR      ${CMAKE_BINARY_DIR}/external/catch2/download
-#  SOURCE_DIR        ${CMAKE_BINARY_DIR}/external/catch2/src
-#  BINARY_DIR        ${CMAKE_BINARY_DIR}/external/catch2/build
-#
-#  CONFIGURE_COMMAND ""
-#  BUILD_COMMAND     ""
-#  INSTALL_COMMAND   ""
-#)
-#
-#ExternalProject_Get_Property(project_catch2 SOURCE_DIR)
-#set(catch2_install_dir ${SOURCE_DIR})
-
-# node-webrtc
-# -----------------------------------------------------------------------------
-
-# set(MODULE wrtc)
-# include(${CMAKE_SOURCE_DIR}/libwebrtc.cmake)
-# if(DEFINED ENV{npm_config_runtime})
-#   if($ENV{npm_config_runtime} STREQUAL "electron")
-#     if(NOT DEFINED ENV{npm_config_target})
-#       message(FATAL_ERROR "npm_config_target must be defined for electron build")
-#     endif()
-#     list(APPEND nodejs_init_args "VERSION" v$ENV{npm_config_target})
-#     if(NOT DEFINED ENV{npm_config_disturl})
-#       message(FATAL_ERROR "npm_config_disturl must be defined for electron build")
-#     endif()
-#     list(APPEND nodejs_init_args "URL" $ENV{npm_config_disturl})
-#     if($ENV{npm_config_target} STRLESS "4")
-#       list(APPEND nodejs_init_args "NAME" "iojs")
-#     endif()
-#   endif()
-# endif()
-# nodejs_init(${nodejs_init_args})
-
-# file(GLOB_RECURSE MODULE_SRC src/*.cc src/*.h)
-# add_nodejs_module(${MODULE} ${MODULE_SRC})
-# set_property(TARGET ${MODULE} PROPERTY CXX_STANDARD 14)
-
-# if(NOT iwyu_path STREQUAL "iwyu_path-NOTFOUND")
-#   set_property(TARGET ${MODULE} PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path} -Xiwyu --mapping_file=${CMAKE_SOURCE_DIR}/.iwyu.imp)
-# endif()
-
-# if(NOT clang_tidy_path STREQUAL "clang_tidy_path-NOTFOUND")
-#   set_property(TARGET ${MODULE} PROPERTY CXX_CLANG_TIDY ${clang_tidy_path})
-# endif()
-
-# set(node_addon_api_dir ${CMAKE_SOURCE_DIR}/node_modules/node-addon-api)
-
-# # NOTE(mroberts): Workaround for
-# #
-# #   https://gitlab.kitware.com/cmake/cmake/issues/15052
-# #
-# # is to include all the header files here.
-# target_include_directories(${MODULE} SYSTEM PRIVATE
-#   ${node_addon_api_dir}/..
-#   ${libwebrtc_source_dir}
-#   ${libwebrtc_source_dir}/webrtc
-#   ${libwebrtc_source_dir}/webrtc/third_party/abseil-cpp
-#   ${libwebrtc_source_dir}/webrtc/third_party/libyuv/include
-# )
-
-# #if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-# #  add_dependencies(${MODULE} project_catch2)
-# #  target_include_directories(${MODULE} SYSTEM PRIVATE
-# #    ${catch2_install_dir}/single_include
-# #  )
-# #endif()
-
-
-# set(CMAKE_MODULE_PATH "${PROJECT_SOURCE_DIR}/CMakeModules;${CMAKE_MODULE_PATH}")
-
-add_executable(mz_libwebrtc
+add_executable(${MODULE}
     src/test.cc
 )
-
-# target_link_libraries(mz_libwebrtc PRIVATE
-#                       protobuf::libprotobuf
-#                       SDL2::SDL2
-#                       SDL2::SDL2main
-#                       ${OPENGL_LIBRARIES}
-#                       ${CMAKE_THREADS_INIT}
-#                       )
-
-# include_directories(${protobuf_INCLUDE_DIRS}
-#                     ${SDL2_INCLUDE_DIRS}
-#                     ${CMAKE_CURRENT_BINARY_DIR}
-#                     )
-
-target_include_directories(mz_libwebrtc PUBLIC
-  ${node_addon_api_dir}/..
-  ${libwebrtc_source_dir}
-  ${libwebrtc_source_dir}/webrtc
-  ${libwebrtc_source_dir}/webrtc/third_party/abseil-cpp
-  ${libwebrtc_source_dir}/webrtc/third_party/libyuv/include
-)
-
-target_include_directories(${MODULE} PRIVATE
-  ${CMAKE_SOURCE_DIR}
-)
-
-target_link_libraries(${MODULE} PRIVATE
-  ${CMAKE_THREAD_LIBS_INIT}
-  libpeerconnection
-  libwebrtc
-)
-
-target_compile_definitions(${MODULE} PRIVATE
-  -DNAPI_VERSION=3
-  -DUSE_BUILTIN_SW_CODECS
-)
-
-set_target_properties(mz_libwebrtc PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/")
-
-
 
 if(WIN32)
   set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /MT /GR-")
@@ -474,4 +340,29 @@ else()
   endif()
 endif()
 
-install(TARGETS mz_libwebrtc)
+target_include_directories(${MODULE} PUBLIC
+  ${node_addon_api_dir}/..
+  ${libwebrtc_source_dir}
+  ${libwebrtc_source_dir}/webrtc
+  ${libwebrtc_source_dir}/webrtc/third_party/abseil-cpp
+  ${libwebrtc_source_dir}/webrtc/third_party/libyuv/include
+)
+
+target_include_directories(${MODULE} PRIVATE
+  ${CMAKE_SOURCE_DIR}
+)
+
+target_link_libraries(${MODULE} PRIVATE
+  ${CMAKE_THREAD_LIBS_INIT}
+  libpeerconnection
+  libwebrtc
+)
+
+target_compile_definitions(${MODULE} PRIVATE
+  -DNAPI_VERSION=3
+  -DUSE_BUILTIN_SW_CODECS
+)
+
+set_target_properties(${MODULE} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}/")
+
+install(TARGETS ${MODULE})
