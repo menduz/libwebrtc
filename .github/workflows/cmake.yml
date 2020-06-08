@@ -12,13 +12,13 @@ jobs:
       fail-fast: false
       matrix:
         #os: [ubuntu-latest, macos-latest, windows-latest]
-        os: [macos-latest, windows-latest]
-        buildtype: [Release] # , Debug]
+        os: [ubuntu-latest, macos-latest, windows-latest]
+        buildtype: [Release, Debug]
         include:
           - os: windows-latest
             triplet: x64-windows
-          # - os: ubuntu-latest
-          #   triplet: x64-linux
+          - os: ubuntu-latest
+            triplet: x64-linux
           - os: macos-latest
             triplet: x64-osx
     steps:
@@ -28,10 +28,6 @@ jobs:
 
       - uses: lukka/get-cmake@latest
 
-      # - name: Set vcpkg's response file path used as part of cache's key.
-      #   uses: lukka/set-shell-env@master
-      #   with:
-      #     VCPKGRESPONSEFILE: ${{ github.workspace }}/cmakeliststxt/vcpkg_${{ matrix.triplet }}.txt
       - name: NPM Install
         run: npm install
       - name: dir
@@ -40,43 +36,61 @@ jobs:
       - name: dir
         run: gci -recurse ${{ github.workspace }}
         if: contains( matrix.os, 'windows')
-      # - name: Restore artifacts, or run vcpkg, build and cache artifacts
-      #   uses: lukka/run-vcpkg@v2
-      #   id: runvcpkg
-      #   with:
-      #     vcpkgArguments: "@${{ env.VCPKGRESPONSEFILE }}"
-      #     vcpkgDirectory: "${{ github.workspace }}/submodules/vcpkg"
-      #     # Ensure the cache key changes any time the content of the response file changes.
-      #     appendedCacheKey: ${{ hashFiles( env.VCPKGRESPONSEFILE ) }}
-
       - name: Run CMake with Ninja
         uses: lukka/run-cmake@v2
         id: runcmake
         with:
           cmakeListsTxtPath: "${{ github.workspace }}/CMakeLists.txt"
-          # useVcpkgToolchainFile: true
           buildWithCMakeArgs: "-- -v"
           buildDirectory: ${{ runner.workspace }}/build
           cmakeBuildType: ${{ matrix.buildtype }}
           # cmakeAppendedArgs: -DUSE_LUAJIT=${{ matrix.luajit }}
-      # - name: Prints output of run-vcpkg's task
-      #   run: echo "root='${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_ROOT_OUT }}', triplet='${{ steps.runvcpkg.outputs.RUNVCPKG_VCPKG_TRIPLET_OUT }}' "
 
       - name: dir
         run: find $RUNNER_WORKSPACE
         shell: bash
 
-      - name: Upload libwebrtc binary
+      - name: Upload lib headers
         uses: actions/upload-artifact@v2
         with:
           name: libwebrtc-${{ matrix.os }}-${{ matrix.buildtype }}-${{ github.sha }}
-          path: ${{ runner.workspace }}/build/external/libwebrtc/build/**
+          path: ${{ runner.workspace }}/build/external/libwebrtc/download/src/**/*.h
 
-      - name: Upload built binary
+      - name: Upload lib binaries
         uses: actions/upload-artifact@v2
         with:
-          name: test-${{ matrix.os }}-${{ matrix.buildtype }}-${{ github.sha }}
-          path: ${{ runner.workspace }}/build/mz*
+          name: libwebrtc-${{ matrix.os }}-${{ matrix.buildtype }}-${{ github.sha }}
+          path: ${{ runner.workspace }}/build/external/libwebrtc/build/${{ matrix.buildtype }}/obj/webrtc.lib
+
+      - name: Upload lib binaries
+        uses: actions/upload-artifact@v2
+        with:
+          name: libwebrtc-${{ matrix.os }}-${{ matrix.buildtype }}-${{ github.sha }}
+          path: ${{ runner.workspace }}/build/external/libwebrtc/build/${{ matrix.buildtype }}/obj/pc/peerconnection.lib
+
+      - name: Upload lib binaries
+        uses: actions/upload-artifact@v2
+        with:
+          name: libwebrtc-${{ matrix.os }}-${{ matrix.buildtype }}-${{ github.sha }}
+          path: ${{ runner.workspace }}/build/external/libwebrtc/build/${{ matrix.buildtype }}/obj/api/libjingle_peerconnection_api.lib
+
+      - name: Upload lib binaries
+        uses: actions/upload-artifact@v2
+        with:
+          name: libwebrtc-${{ matrix.os }}-${{ matrix.buildtype }}-${{ github.sha }}
+          path: ${{ runner.workspace }}/build/external/libwebrtc/build/${{ matrix.buildtype }}/obj/libwebrtc.a
+
+      - name: Upload lib binaries
+        uses: actions/upload-artifact@v2
+        with:
+          name: libwebrtc-${{ matrix.os }}-${{ matrix.buildtype }}-${{ github.sha }}
+          path: ${{ runner.workspace }}/build/external/libwebrtc/build/${{ matrix.buildtype }}/obj/pc/libpeerconnection.a
+
+      - name: Upload lib binaries
+        uses: actions/upload-artifact@v2
+        with:
+          name: libwebrtc-${{ matrix.os }}-${{ matrix.buildtype }}-${{ github.sha }}
+          path: ${{ runner.workspace }}/build/external/libwebrtc/build/${{ matrix.buildtype }}/obj/api/libjingle_peerconnection_api.a
 
       - name: Upload built binary
         uses: actions/upload-artifact@v2
