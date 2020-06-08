@@ -46,54 +46,20 @@ jobs:
           cmakeBuildType: ${{ matrix.buildtype }}
           # cmakeAppendedArgs: -DUSE_LUAJIT=${{ matrix.luajit }}
 
+      - name: Pack artifact
+        run: ${{ github.workspace }}/scripts/archive.sh
+        shell: bash
+        env:
+          RELEASE_TYPE: ${{ matrix.buildtype }}
+          BASE_DIR: ${{ runner.workspace }}/build/external/libwebrtc
+          ARTIFACTS_DIR: ${{ github.workspace }}/artifacts
+
       - name: dir
-        run: find $RUNNER_WORKSPACE
+        run: find ${{ github.workspace }}/artifacts
         shell: bash
 
-      - name: Upload lib headers
+      - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
           name: libwebrtc-${{ matrix.os }}-${{ matrix.buildtype }}-${{ github.sha }}
-          path: ${{ runner.workspace }}/build/external/libwebrtc/download/src/**/*.h
-
-      - name: Upload lib binaries
-        uses: actions/upload-artifact@v2
-        with:
-          name: libwebrtc-${{ matrix.os }}-${{ matrix.buildtype }}-${{ github.sha }}
-          path: ${{ runner.workspace }}/build/external/libwebrtc/build/${{ matrix.buildtype }}/obj/webrtc.lib
-
-      - name: Upload lib binaries
-        uses: actions/upload-artifact@v2
-        with:
-          name: libwebrtc-${{ matrix.os }}-${{ matrix.buildtype }}-${{ github.sha }}
-          path: ${{ runner.workspace }}/build/external/libwebrtc/build/${{ matrix.buildtype }}/obj/pc/peerconnection.lib
-
-      - name: Upload lib binaries
-        uses: actions/upload-artifact@v2
-        with:
-          name: libwebrtc-${{ matrix.os }}-${{ matrix.buildtype }}-${{ github.sha }}
-          path: ${{ runner.workspace }}/build/external/libwebrtc/build/${{ matrix.buildtype }}/obj/api/libjingle_peerconnection_api.lib
-
-      - name: Upload lib binaries
-        uses: actions/upload-artifact@v2
-        with:
-          name: libwebrtc-${{ matrix.os }}-${{ matrix.buildtype }}-${{ github.sha }}
-          path: ${{ runner.workspace }}/build/external/libwebrtc/build/${{ matrix.buildtype }}/obj/libwebrtc.a
-
-      - name: Upload lib binaries
-        uses: actions/upload-artifact@v2
-        with:
-          name: libwebrtc-${{ matrix.os }}-${{ matrix.buildtype }}-${{ github.sha }}
-          path: ${{ runner.workspace }}/build/external/libwebrtc/build/${{ matrix.buildtype }}/obj/pc/libpeerconnection.a
-
-      - name: Upload lib binaries
-        uses: actions/upload-artifact@v2
-        with:
-          name: libwebrtc-${{ matrix.os }}-${{ matrix.buildtype }}-${{ github.sha }}
-          path: ${{ runner.workspace }}/build/external/libwebrtc/build/${{ matrix.buildtype }}/obj/api/libjingle_peerconnection_api.a
-
-      - name: Upload built binary
-        uses: actions/upload-artifact@v2
-        with:
-          name: test-${{ matrix.os }}-${{ matrix.buildtype }}-${{ github.sha }}
-          path: ${{ runner.workspace }}/build/*.dll
+          path: ${{ github.workspace }}/artifacts/*.tar
