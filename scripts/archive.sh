@@ -7,11 +7,15 @@ mkdir -p "$ARTIFACTS_DIR" || true
 mkdir -p "$ARTIFACTS_DIR/lib" || true
 mkdir -p "$ARTIFACTS_DIR/include" || true
 
-cd "$(pwd)/build/external/libwebrtc/download/src"
-find . -name "*.h" -print | cpio -pd "$ARTIFACTS_DIR/include"
+cp "$BASE_DIR/build/$RELEASE_TYPE/obj/libwebrtc.a" "$ARTIFACTS_DIR/lib" || true
+cp "$BASE_DIR/build/$RELEASE_TYPE/obj/pc/libpeerconnection.a" "$ARTIFACTS_DIR/lib" || true
+cp "$BASE_DIR/build/$RELEASE_TYPE/obj/api/libjingle_peerconnection_api.a" "$ARTIFACTS_DIR/lib" || true
 
-cp "$BASE_DIR/build/$RELEASE_TYPE/obj/libwebrtc.a" "$ARTIFACTS_DIR/lib"
+cp "$BASE_DIR/build/$RELEASE_TYPE/obj/libwebrtc.lib" "$ARTIFACTS_DIR/lib" || true
+cp "$BASE_DIR/build/$RELEASE_TYPE/obj/pc/libpeerconnection.lib" "$ARTIFACTS_DIR/lib" || true
+cp "$BASE_DIR/build/$RELEASE_TYPE/obj/api/libjingle_peerconnection_api.lib" "$ARTIFACTS_DIR/lib" || true
+
+find "$BASE_DIR/build/external/libwebrtc/download/src" -name "*.h" -print | cpio -pd "$ARTIFACTS_DIR/include"
 
 # create tar
-cd "$ARTIFACTS_DIR"
-tar -cvf artifact.tar lib include
+tar -cvf artifact.tar "$ARTIFACTS_DIR"

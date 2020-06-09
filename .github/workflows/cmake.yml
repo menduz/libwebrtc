@@ -13,7 +13,7 @@ jobs:
       matrix:
         #os: [ubuntu-latest, macos-latest, windows-latest]
         os: [ubuntu-latest, macos-latest, windows-latest]
-        buildtype: [Release, Debug]
+        buildtype: [Release] #, Debug]
         include:
           - os: windows-latest
             triplet: x64-windows
@@ -28,14 +28,14 @@ jobs:
 
       - uses: lukka/get-cmake@latest
 
-      - name: NPM Install
-        run: npm install
       - name: dir
         run: find ${{ github.workspace }}
         if: "!contains( matrix.os, 'windows')"
+
       - name: dir
         run: gci -recurse ${{ github.workspace }}
         if: contains( matrix.os, 'windows')
+
       - name: Run CMake with Ninja
         uses: lukka/run-cmake@v2
         id: runcmake
@@ -46,21 +46,35 @@ jobs:
           cmakeBuildType: ${{ matrix.buildtype }}
           # cmakeAppendedArgs: -DUSE_LUAJIT=${{ matrix.luajit }}
 
+      - name: dir
+        run: find ${{ github.workspace }}
+        shell: bash
+
+      - name: dir
+        run: find ${{ runner.workspace }}
+        shell: bash
+
       - name: Pack artifact
         run: ${{ github.workspace }}/scripts/archive.sh
         shell: bash
-        working-directory: ${{ github.workspace }}
+        working-directory: ${{ runner.workspace }}
         env:
           RELEASE_TYPE: ${{ matrix.buildtype }}
           BASE_DIR: build/external/libwebrtc
           ARTIFACTS_DIR: artifacts
 
       - name: dir
-        run: find ${{ github.workspace }}/artifacts
+        run: find ${{ runner.workspace }}
         shell: bash
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
           name: libwebrtc-${{ matrix.os }}-${{ matrix.buildtype }}-${{ github.sha }}
-          path: ${{ github.workspace }}/artifacts/*.tar
+          path: ${{ runner.workspace }}/*.tar
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: libwebrtc-${{ matrix.os }}-${{ matrix.buildtype }}-${{ github.sha }}
+          path: ${{ github.workspace }}/*.tar
