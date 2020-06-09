@@ -49,10 +49,11 @@ jobs:
       - name: Pack artifact
         run: ${{ github.workspace }}/scripts/archive.sh
         shell: bash
+        working-directory: ${{ github.workspace }}
         env:
           RELEASE_TYPE: ${{ matrix.buildtype }}
-          BASE_DIR: ${{ runner.workspace }}/build/external/libwebrtc
-          ARTIFACTS_DIR: ${{ github.workspace }}/artifacts
+          BASE_DIR: build/external/libwebrtc
+          ARTIFACTS_DIR: artifacts
 
       - name: dir
         run: find ${{ github.workspace }}/artifacts
