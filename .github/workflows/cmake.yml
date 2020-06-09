@@ -47,12 +47,12 @@ jobs:
           # cmakeAppendedArgs: -DUSE_LUAJIT=${{ matrix.luajit }}
 
       - name: dir
-        run: find ${{ github.workspace }}
-        shell: bash
+        run: find ${{ runner.workspace }}
+        if: "!contains( matrix.os, 'windows')"
 
       - name: dir
-        run: find ${{ runner.workspace }}
-        shell: bash
+        run: gci -recurse ${{ runner.workspace }}
+        if: contains( matrix.os, 'windows')
 
       - name: Pack artifact
         run: ${{ github.workspace }}/scripts/archive.sh
@@ -62,10 +62,6 @@ jobs:
           RELEASE_TYPE: ${{ matrix.buildtype }}
           BASE_DIR: build/external/libwebrtc
           ARTIFACTS_DIR: artifacts
-
-      - name: dir
-        run: find ${{ runner.workspace }}
-        shell: bash
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
